@@ -1,4 +1,4 @@
-# BaatcheetAI
+# BaatCheetLLM
 
 Chat with your documents. Index **PDFs, audio, video, YouTube links and web pages**, then ask questions and get **grounded answers with citations** — page numbers, URLs and timestamps.
 
@@ -20,7 +20,7 @@ PDF / audio / video / YouTube / URL
   └─────────────┘   └──────────────┘
         │ ③ ask → top-k retrieve → cited answer
         ▼
-     Baatcheet UI
+     BaatCheetLLM UI
 ```
 
 ## Architecture
@@ -37,12 +37,83 @@ Auth: email + password (bcrypt) plus Google/GitHub OAuth, 7-day JWT in an httpOn
 
 ## Prerequisites
 
-- Node.js 24 + npm
-- Docker (for Qdrant + Postgres)
-- `ffmpeg` and `yt-dlp` on PATH (audio/video/YouTube indexing)
+- Docker + Docker Compose (recommended — everything runs containerized), **or**
+  Node.js 24 + npm for local dev
 - An OpenAI API key **per user** — entered in the app's Settings dialog, never stored server-side
 
-## Quickstart
+## Quickstart (Docker — recommended)
+
+```bash
+# 1. Configure environment (see tables below — never commit these files)
+#    rag/.env, rag/server/.env, rag/web/.env.local
+
+# 2. Build + start the whole stack (Postgres, Qdrant, API :4000, web :3000)
+docker compose up --build -d
+
+# 3. Follow the API logs (migrations apply automatically on boot)
+docker compose logs -f server
+```
+
+Open `http://localhost:3000` → **Create account** (or Google/GitHub) → gear icon ⚙ → paste your OpenAI key, pick models → index your first source.
+
+| Service | URL | Notes |
+|---|---|---|
+| web | `http://localhost:3000` | Next.js UI |
+| server | `http://localhost:4000/api/health` | Express API (`ffmpeg` + `yt-dlp` baked into the image) |
+| postgres | `localhost:5432` | Data in the `baatcheet-pgdata` volume — kept across restarts |
+| qdrant | `http://localhost:6333` | Vectors in the `baatcheet-qdrant` volume |
+
+```bash
+docker compose ps            # status
+docker compose logs -f       # all logs
+docker compose down          # stop (volumes + data are kept)
+docker compose down -v       # stop AND delete all data (fresh start)
+docker compose build server  # rebuild after changing server/ or src/
+docker compose build web     # rebuild after changing web/
+```
+
+### Using Neon Postgres instead of local
+
+Nothing to rebuild — only connection strings change. Qdrant stays wherever it is.
+
+```bash
+# 1. Create a project at https://neon.tech → Copy the connection string
+#    (Postgres 16+, pooled or direct — both work; it ends with ?sslmode=require)
+
+# 2a. Docker Compose: add ONE line to rag/.env (gitignored, auto-loaded)
+DATABASE_URL="postgresql://<user>:<password>@<endpoint>.neon.tech/<dbname>?sslmode=require"
+
+# 2b. Local dev (no Docker): put the SAME string in rag/server/.env instead
+#     (this file is what `npm run dev` in server/ reads)
+
+# 3. Create the tables on Neon (run once — safe to re-run, applies pending only)
+cd rag/server && npx prisma migrate deploy
+
+# 4. Restart the API
+docker compose up -d server        # Docker path (recreates with the new URL)
+# or: restart `npm run dev`        # local-dev path
+
+# 5. Verify
+curl http://localhost:4000/api/health
+# sign up in the UI → check the user row landed in Neon (Neon dashboard → Tables → User)
+```
+
+Notes:
+- Compose reads `DATABASE_URL` from `rag/.env`/shell first; the local `postgres:` service is only a fallback default. You can `docker compose stop postgres` once Neon is live (server only needs it at boot for `depends_on`).
+- Optional — copy existing local data over first:
+  ```bash
+  pg_dump "postgresql://baatcheet:<pass>@localhost:5432/baatcheet" --no-owner \
+    | psql "<neon-DATABASE_URL>"
+  ```
+- OAuth callback URLs don't change (they point at the API on `:4000`, not the DB).
+```
+
+> Migrating from the old standalone containers? Stop them first
+> (`docker stop baatcheet-postgres laughing_shtern`) to free ports 5432/6333.
+> The Postgres volume is reused by name, so existing users survive the move.
+> Qdrant starts a fresh volume — re-index your sources afterwards.
+
+## Quickstart (local dev, no Docker images)
 
 ```bash
 # 1. Start infrastructure
@@ -56,6 +127,7 @@ docker run -d --name baatcheet-postgres --restart unless-stopped \
 npm install          # in rag/
 npm install          # in rag/server/
 npm install          # in rag/web/
+# (ffmpeg + yt-dlp must be on PATH for audio/video/YouTube indexing)
 
 # 3. Configure environment (see tables below — never commit these files)
 #    rag/.env, rag/server/.env, rag/web/.env.local
@@ -63,7 +135,7 @@ npm install          # in rag/web/
 # 4. Create database tables
 cd rag/server && npx prisma migrate dev
 
-# 5. Run everything (three terminals)
+# 5. Run everything (two terminals)
 npm run dev          # in rag/server/  → API on :4000
 npm run dev          # in rag/web/     → UI on :3000
 ```
@@ -78,8 +150,9 @@ Open `http://localhost:3000` → **Create account** (or Google/GitHub) → gear 
 |---|---|
 | `OPENAI_API_KEY` | `sk-proj-…` (CLI fallback; the web app uses each user's own key) |
 | `EMBEDDING_MODEL` | `text-embedding-3-small` |
-| `QDRANT_URL` | `http://localhost:6333` |
-| `QDRANT_PROJECT_NAME` | `desi_rag` |
+| `QDRANT_URL` | `http://localhost:6333` (or Qdrant Cloud `https://….cloud.qdrant.io`) |
+| `QDRANT_PROJECT_NAME` | `desi_rag` (collection name) |
+| `QDRANT_API_KEY` | *(Qdrant Cloud only)* API key from the Cloud dashboard; empty = self-hosted |
 | `MAX_SIMILATARY_SEARCH` | `5` |
 | `GPT_RESPONSE_MODEL` | `gpt-4o-mini` |
 
@@ -130,19 +203,22 @@ These use `rag/.env` directly (your own key there).
 
 ```
 rag/
+├── docker-compose.yml   # full stack: postgres + qdrant + server + web
 ├── src/                 # shared RAG backend (indexers, chunking, vector store, query)
 ├── scripts/             # CLI entry points (npm run index:*)
 ├── main.js              # terminal chat
 ├── server/              # Express API :4000
+│   ├── Dockerfile       # multi-stage (ffmpeg + yt-dlp + prod deps)
 │   ├── prisma/          # schema + migrations (Postgres)
 │   └── src/             # env, db, auth/, routes/, jobs/
 ├── web/                 # Next.js UI :3000 (pages + components only)
-└── docker services      # Qdrant :6333, Postgres :5432 (separate from code)
+│   └── Dockerfile       # standalone output
+└── volumes (Docker)     # baatcheet-pgdata (users/history), baatcheet-qdrant (vectors)
 ```
 
 ## Notes
 
 - **Costs:** indexing (Whisper + embeddings) and chat bill the OpenAI key entered in Settings —(each user pays their own). Embedding model must stay consistent within a collection or retrieval quality drops.
-- **History vs vectors:** deleting a history entry removes the *record* from Postgres; vectors stay in Qdrant.
+- **History = vectors too:** deleting a history entry removes its vectors from the collection first (filtered by an id stamped on every chunk), then drops the record. Sources indexed before this existed only clear the record.
 - **Fresh database:** `psql $DATABASE_URL` → tables `User`, `OAuthAccount`, `IndexedSource`. Inspect with `npm run db:studio` in `server/`.
 - **Never commit** `.env` files — all three packages gitignore them (see `.gitignore` files).

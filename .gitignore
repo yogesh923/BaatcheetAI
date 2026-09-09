@@ -1,0 +1,31 @@
+# Baatcheet — RAG app (Node backend + Express API + Next.js web)
+# NOTE: web/ has its own .gitignore too (from create-next-app).
+
+# dependencies (all three packages)
+node_modules/
+web/node_modules/
+server/node_modules/
+.pnp.*
+.yarn/*
+
+# secrets — NEVER commit (local dev values only)
+.env
+.env.local
+web/.env.local
+server/.env
+
+# build outputs (regenerable)
+web/.next/
+web/out/
+server/dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# local runtime data (regenerable / machine-specific)
+tmp/
+.index-history.json
+
+# logs & OS junk
+*.log
+npm-debug.log*
+.DS_Store

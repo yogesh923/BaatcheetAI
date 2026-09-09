@@ -1,0 +1,13 @@
+# dependencies
+node_modules/
+
+# TypeScript build output (regenerable via `npm run build`; dev runs from src via tsx)
+/dist/
+*.tsbuildinfo
+
+# secrets — NEVER commit (see .env for the required keys)
+.env
+
+# logs & OS junk
+*.log
+.DS_Store

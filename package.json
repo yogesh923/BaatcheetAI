@@ -1,0 +1,30 @@
+{
+  "name": "rag",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node main.js",
+    "index:pdf": "node scripts/index-pdf.js",
+    "index:audio": "node scripts/index-audio.js",
+    "index:video": "node scripts/index-video.js",
+    "index:website": "node scripts/index-website.js",
+    "index:youtube": "node scripts/index-youtube.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@langchain/community": "^1.1.29",
+    "@langchain/core": "^1.2.9",
+    "@langchain/openai": "^1.5.11",
+    "@langchain/qdrant": "^1.0.3",
+    "@langchain/textsplitters": "^1.0.1",
+    "cheerio": "^1.2.0",
+    "dotenv": "^17.4.2",
+    "openai": "^7.10.0",
+    "pdf-parse": "^2.4.5"
+  }
+}

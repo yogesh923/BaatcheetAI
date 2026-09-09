@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Email/password + OAuth users. Vector data lives in Qdrant —
+// Postgres stays strictly relational (users + index history).
+model User {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  name         String?
+  image        String?
+  passwordHash String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  accounts     OAuthAccount[]
+  sources      IndexedSource[]
+}
+
+model OAuthAccount {
+  id         String @id @default(cuid())
+  provider   String // "google" | "github"
+  providerId String
+  userId     String
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@index([userId])
+}
+
+model IndexedSource {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type       String // "pdf" | "audio" | "video" | "website" | "youtube"
+  label      String
+  detail     String?
+  /** Job id stamped as metadata.source_id on every chunk — targets vector deletes. Null for pre-stamp rows. */
+  sourceId   String?  @unique
+  chunks     Int?
+  segments   Int?
+  documents  Int?
+  durationMs Int
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+}

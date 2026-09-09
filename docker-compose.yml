@@ -1,0 +1,98 @@
+name: baatcheet
+
+# Full stack: Postgres + Qdrant + Express API + Next.js web.
+# Secrets come from env files (never baked into images):
+#   rag/.env          → shared RAG backend (models, Qdrant collection)
+#   server/.env       → API (DATABASE_URL host part overridden below)
+#   web/.env.local    → JWT_SECRET + browser API URL
+# Usage: docker compose up --build   |   docker compose down
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: baatcheet
+      # Default matches the existing local setup; override in shell if yours differs.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-baatcheet_dev_password}
+      POSTGRES_DB: baatcheet
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U baatcheet"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  qdrant:
+    image: qdrant/qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    env_file:
+      - .env
+      - server/.env
+    environment:
+      # Docker hostnames win over the localhost defaults in the env files.
+      # For hosted Postgres (Neon), set DATABASE_URL in your shell or in
+      # rag/.env (auto-loaded for interpolation, never committed) — e.g.
+      # DATABASE_URL="postgresql://user:pass@ep-xyz.neon.tech/baatcheet?sslmode=require"
+      # When unset, it defaults to the local postgres service below.
+      DATABASE_URL: ${DATABASE_URL:-postgresql://baatcheet:${POSTGRES_PASSWORD:-baatcheet_dev_password}@postgres:5432/baatcheet}
+      QDRANT_URL: ${QDRANT_URL:-http://qdrant:6333}
+      # Qdrant Cloud mandates an API key (empty = self-hosted, no auth header).
+      # Set QDRANT_API_KEY in rag/.env or shell; collection comes from
+      # QDRANT_PROJECT_NAME there (or server/.env for local dev).
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-}
+      PORT: 4000
+      SERVER_URL: http://localhost:4000
+      WEB_URL: http://localhost:3000
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:4000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  web:
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:4000
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      server:
+        condition: service_healthy
+    env_file:
+      - web/.env.local
+    environment:
+      # Server-side fetches must use the Docker hostname (localhost here
+      # would be the web container itself). Browser calls still use
+      # NEXT_PUBLIC_API_URL from web/.env.local.
+      API_INTERNAL_URL: http://server:4000
+
+volumes:
+  # Named explicitly so the existing `baatcheet-pgdata` volume (your users!)
+  # is reused instead of starting empty. Created automatically if missing.
+  pgdata:
+    name: baatcheet-pgdata
+  qdrant_storage:
+    name: baatcheet-qdrant

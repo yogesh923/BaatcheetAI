@@ -1,0 +1,18 @@
+# Root build context (used by server/Dockerfile).
+node_modules/
+web/node_modules/
+server/node_modules/
+web/.next/
+server/dist/
+*.tsbuildinfo
+
+# Never bake secrets into images — Compose provides them at runtime.
+.env
+.env.local
+web/.env.local
+server/.env
+
+# Local runtime data.
+tmp/
+
+.git/
