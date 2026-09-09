@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
+import type { CookieOptions } from "express";
 import { env } from "../env.js";
 
 const ALG = "HS256";
@@ -31,15 +32,23 @@ export async function readSession(token: string | undefined): Promise<string | n
   }
 }
 
-export function sessionCookie(token: string) {
+export function sessionCookie(token: string): {
+  name: string;
+  value: string;
+  options: CookieOptions;
+} {
+  // Production serves UI and API on different sites (Vercel ↔ Render), so
+  // the session cookie must be SameSite=None + Secure — browsers silently
+  // drop Lax cross-site fetch cookies, which strands users on /login after
+  // a successful signup. Local dev (same-site localhost) keeps Lax.
+  const isProd = process.env.NODE_ENV === "production";
   return {
     name: SESSION_COOKIE,
     value: token,
     options: {
       httpOnly: true,
-      // NOTE: set secure: true when serving over HTTPS in production.
-      secure: false,
-      sameSite: "lax" as const,
+      secure: isProd,
+      sameSite: isProd ? "none" : ("lax" as const),
       path: "/",
       maxAge: MAX_AGE_SECONDS * 1000,
     },
