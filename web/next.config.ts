@@ -1,10 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Minimal standalone server for the Docker image.
-  // (All API routes moved to the Express server, so no cross-root
-  // tracing or server externals are needed anymore.)
-  output: "standalone",
+  // Standalone server ONLY for the Docker image (web/Dockerfile sets
+  // DOCKER_BUILD=1). Vercel uses its default output — standalone + the old
+  // cross-root tracing hack break its build (ENOENT next-server.js.nft.json).
+  ...(process.env.DOCKER_BUILD ? { output: "standalone" as const } : {}),
 };
 
 export default nextConfig;

@@ -13,6 +13,9 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ARG NEXT_PUBLIC_API_URL=http://localhost:4000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# Triggers `output: "standalone"` in next.config.ts (Vercel must NOT get it).
+ARG DOCKER_BUILD=1
+ENV DOCKER_BUILD=$DOCKER_BUILD
 RUN npm run build
 
 FROM node:24-bookworm-slim AS runner
