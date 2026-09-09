@@ -1,7 +1,8 @@
 // Base URL of the Express API (server/). All app HTTP goes through Express —
 // Next.js owns pages only. NEXT_PUBLIC_API_URL is exposed to the browser.
-export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+export const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"
+).replace(/\/+$/, "");
 
 import { getApiKey } from "./credentials";
 

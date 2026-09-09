@@ -12,7 +12,17 @@ import modelsRouter from "./routes/models.js";
 
 const app = express();
 
-app.use(cors({ origin: env.webUrl, credentials: true }));
+// WEB_URL may be a comma-separated list (local + production UIs).
+const allowedOrigins = env.webUrl
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+app.use(
+  cors({
+    origin: allowedOrigins.length > 1 ? allowedOrigins : (allowedOrigins[0] ?? env.webUrl),
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 app.use(express.json({ limit: "1mb" }));
 
