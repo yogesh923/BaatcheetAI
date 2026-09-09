@@ -84,9 +84,8 @@ services:
     env_file:
       - web/.env.local
     environment:
-      # Server-side fetches must use the Docker hostname (localhost here
-      # would be the web container itself). Browser calls still use
-      # NEXT_PUBLIC_API_URL from web/.env.local.
+      # Server-side fetches + rewrite target: the API container by Docker
+      # hostname (localhost here would be the web container itself).
       API_INTERNAL_URL: http://server:4000
 
 volumes:

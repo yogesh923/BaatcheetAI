@@ -163,6 +163,7 @@ Open `http://localhost:3000` → **Create account** (or Google/GitHub) → gear 
 | `DATABASE_URL` | `postgresql://baatcheet:<password>@localhost:5432/baatcheet` |
 | `JWT_SECRET` | 48-char random string (**must match** `web/.env.local`) |
 | `PORT` / `SERVER_URL` / `WEB_URL` | `4000` / `http://localhost:4000` / `http://localhost:3000` |
+| `APP_URL` | UI origin for OAuth callbacks (`http://localhost:3000` locally, Vercel URL in prod) |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | from Google Cloud Console |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | from GitHub Developer Settings |
 
@@ -171,14 +172,23 @@ Open `http://localhost:3000` → **Create account** (or Google/GitHub) → gear 
 | Key | Example |
 |---|---|
 | `JWT_SECRET` | same value as `server/.env` (proxy verifies the session) |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:4000` |
+| `API_INTERNAL_URL` | `http://localhost:4000` locally · `http://server:4000` in Compose · API URL on Vercel |
+
+> The browser always calls same-origin `/api/*` — Next.js rewrites it to the
+> API, so the session cookie stays first-party. `NEXT_PUBLIC_API_URL` is
+> intentionally unused.
 
 ## OAuth setup
 
-- **GitHub:** Settings → Developer settings → OAuth Apps. Authorization callback URL: `http://localhost:4000/api/auth/github/callback`
-- **Google:** Cloud Console → Credentials → OAuth client (Web). Authorized redirect URI: `http://localhost:4000/api/auth/google/callback`
+- **GitHub:** Settings → Developer settings → OAuth Apps. Authorization callback URL: `<APP_URL>/api/auth/github/callback`
+- **Google:** Cloud Console → Credentials → OAuth client (Web). Authorized redirect URI: `<APP_URL>/api/auth/google/callback`
 
-(Callbacks hit the Express server, not Next.js.) Restart the API server after changing `server/.env`.
+(`APP_URL` = where the UI runs: `http://localhost:3000` locally, your Vercel
+URL in prod — set it in `server/.env`. Callbacks go through the UI origin so
+the session cookie lands on the right domain. Register localhost + prod URLs
+side by side in both dashboards.)
+
+Restart the API server after changing `server/.env`.
 
 ## Using it
 

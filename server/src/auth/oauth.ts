@@ -16,7 +16,7 @@ function googleClient(): Google {
   return new Google(
     env.googleId,
     env.googleSecret,
-    `${env.serverUrl}/api/auth/google/callback`
+    `${env.appUrl}/api/auth/google/callback`
   );
 }
 
@@ -27,7 +27,7 @@ function githubClient(): GitHub {
   return new GitHub(
     env.githubId,
     env.githubSecret,
-    `${env.serverUrl}/api/auth/github/callback`
+    `${env.appUrl}/api/auth/github/callback`
   );
 }
 
