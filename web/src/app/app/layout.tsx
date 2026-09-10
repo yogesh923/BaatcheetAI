@@ -7,7 +7,6 @@ import { AppTour, TourButton } from "@/components/app-tour";
 import { UserMenu } from "@/components/user-menu";
 import { Badge } from "@/components/ui/badge";
 import { getSessionUser } from "@/lib/session";
-import { Toaster } from "@/components/toaster";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const user = await getSessionUser();
@@ -65,7 +64,6 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         </p>
       </footer>
       <AppTour />
-      <Toaster />
     </div>
   );
 }
