@@ -4,6 +4,7 @@ import { IndexHistory } from "@/components/index-history";
 import { ChatSection } from "@/components/chat-section";
 import { ModeToggle } from "@/components/mode-toggle";
 import { SettingsDialog } from "@/components/settings-dialog";
+import { AppTour, TourButton } from "@/components/app-tour";
 import { UserMenu } from "@/components/user-menu";
 import { Badge } from "@/components/ui/badge";
 import { getSessionUser } from "@/lib/session";
@@ -49,6 +50,7 @@ export default async function AppPage() {
             </div>
             <ModeToggle />
             <SettingsDialog />
+            <TourButton />
             <UserMenu
               name={user?.name}
               email={user?.email}
@@ -74,6 +76,7 @@ export default async function AppPage() {
           Next.js.
         </p>
       </footer>
+      <AppTour />
     </div>
   );
 }

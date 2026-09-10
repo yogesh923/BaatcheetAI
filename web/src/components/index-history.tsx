@@ -92,7 +92,7 @@ export function IndexHistory() {
   }
 
   return (
-    <Card className="h-fit">
+    <Card className="h-fit" data-tour="history">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">

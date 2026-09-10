@@ -84,7 +84,7 @@ export function IndexingSection() {
   const [tab, setTab] = React.useState<SourceType>("pdf");
   const [file, setFile] = React.useState<File | null>(null);
   const [url, setUrl] = React.useState("");
-  const [sourceName, setSourceName] = React.useState("Aaj Tak");
+  const [sourceName, setSourceName] = React.useState("");
   const [active, setActive] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
   const [message, setMessage] = React.useState("");
@@ -259,7 +259,7 @@ export function IndexingSection() {
   const phaseLabel = PHASE_LABEL[progress.phase] ?? progress.phase;
 
   return (
-    <Card className="h-fit">
+    <Card className="h-fit" data-tour="indexing">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Index a source</CardTitle>
@@ -347,7 +347,7 @@ export function IndexingSection() {
               <label htmlFor="index-source" className="text-sm font-medium">Source name</label>
               <Input
                 id="index-source"
-                placeholder="Aaj Tak"
+                placeholder="e.g. BBC News, personal blog…"
                 value={sourceName}
                 onChange={(e) => setSourceName(e.target.value)}
               />

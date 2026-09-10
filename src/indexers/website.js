@@ -9,7 +9,7 @@ import { indexDocumentsBatched } from "../vectorStore.js";
  */
 export async function indexWebsite(
   url = "https://www.aajtak.in/technology/tech-news/story/australia-social-media-algorithm-my-feed-my-way-prym-dskc-2638822-2026-09-08",
-  { sourceName = "Aaj Tak", ...opts } = {}
+  { sourceName = "Website", ...opts } = {}
 ) {
   logger.info(`Starting website indexing: ${url}`);
   const loader = new CheerioWebBaseLoader(url);

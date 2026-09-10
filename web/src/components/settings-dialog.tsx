@@ -156,6 +156,7 @@ export function SettingsDialog() {
         onClick={openDialog}
         aria-label="OpenAI settings"
         title="Your OpenAI key & models"
+        data-tour="settings"
       >
         <Settings2 className="size-4" />
       </Button>

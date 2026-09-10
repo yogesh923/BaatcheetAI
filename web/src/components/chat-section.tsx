@@ -154,7 +154,7 @@ export function ChatSection() {
   }
 
   return (
-    <Card className="flex h-fit min-h-[560px] flex-col overflow-hidden">
+    <Card className="flex h-fit min-h-[560px] flex-col overflow-hidden" data-tour="chat">
       <CardHeader className="border-b border-border bg-gradient-to-r from-blue-600/[0.06] via-transparent to-sky-400/[0.06]">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-3">
