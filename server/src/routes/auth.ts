@@ -213,6 +213,35 @@ router.post("/logout", (_req: Request, res: Response) => {
   res.json({ ok: true });
 });
 
+/**
+ * Set a password for accounts that don't have one (e.g. Google/GitHub
+ * signups). This is what unblocks removing an OAuth connection that is
+ * currently the only sign-in method. Deliberately set-only: changing an
+ * existing password would need current-password verification.
+ */
+router.post("/password", requireUser, async (req: AuthedRequest, res: Response) => {
+  const { password } = (req.body ?? {}) as { password?: unknown };
+  if (typeof password !== "string" || password.length < 8) {
+    res.status(400).json({ ok: false, error: "Password must be at least 8 characters." });
+    return;
+  }
+  const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+  if (!user) {
+    res.status(404).json({ ok: false, error: "User not found." });
+    return;
+  }
+  if (user.passwordHash) {
+    res.status(400).json({ ok: false, error: "A password is already set for this account." });
+    return;
+  }
+  const updated = await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash: await hashPassword(password) },
+    select: ME_SELECT,
+  });
+  res.json({ ok: true, user: shapeMe(updated) });
+});
+
 router.get("/me", requireUser, async (req: AuthedRequest, res: Response) => {
   const user = await prisma.user.findUnique({
     where: { id: req.userId! },

@@ -249,6 +249,20 @@ export function ProfileForm() {
         </CardContent>
       </Card>
 
+      <PasswordCard
+        hasPassword={me.hasPassword}
+        onChanged={refresh}
+        notify={(kind, text) => {
+          if (kind === "error") {
+            setError(text);
+            setNotice("");
+          } else {
+            setNotice(text);
+            setError("");
+          }
+        }}
+      />
+
       <Card>
         <CardHeader>
           <CardTitle>Connected accounts</CardTitle>
@@ -325,5 +339,80 @@ export function ProfileForm() {
         onConfirm={() => pendingUnlink && unlink(pendingUnlink)}
       />
     </div>
+  );
+}
+
+function PasswordCard({
+  hasPassword,
+  onChanged,
+  notify,
+}: {
+  hasPassword: boolean;
+  onChanged: () => void;
+  notify: (kind: "error" | "notice", text: string) => void;
+}) {
+  const [password, setPassword] = React.useState("");
+  const [saving, setSaving] = React.useState(false);
+
+  async function set(e: React.FormEvent) {
+    e.preventDefault();
+    if (saving) return;
+    setSaving(true);
+    try {
+      const res = await apiFetch("/api/auth/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error ?? "Could not set password.");
+      }
+      setPassword("");
+      notify("notice", "Password set. You can now sign in with email too.");
+      onChanged();
+    } catch (err) {
+      notify("error", err instanceof Error ? err.message : "Could not set password.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Password</CardTitle>
+        <CardDescription>
+          {hasPassword
+            ? "A password is set for this account."
+            : "No password set — add one to unlock email sign-in and OAuth removal."}
+        </CardDescription>
+      </CardHeader>
+      {!hasPassword && (
+        <CardContent>
+          <form onSubmit={set} className="flex flex-col gap-2.5 sm:flex-row sm:items-end">
+            <div className="flex flex-1 flex-col gap-1.5">
+              <label htmlFor="profile-new-password" className="text-sm font-medium">
+                New password
+              </label>
+              <Input
+                id="profile-new-password"
+                type="password"
+                required
+                minLength={8}
+                placeholder="At least 8 characters"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+              />
+            </div>
+            <Button type="submit" disabled={saving}>
+              {saving && <Loader2 className="size-4 animate-spin" />}
+              Set password
+            </Button>
+          </form>
+        </CardContent>
+      )}
+    </Card>
   );
 }
