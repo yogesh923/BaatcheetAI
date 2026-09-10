@@ -24,6 +24,9 @@ next-env.d.ts
 # local runtime data (regenerable / machine-specific)
 tmp/
 .index-history.json
+# YouTube auth cookies — session credentials, never commit
+cookies.txt
+*.cookies.txt
 
 # logs & OS junk
 *.log

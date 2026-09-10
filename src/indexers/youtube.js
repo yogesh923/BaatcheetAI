@@ -64,8 +64,22 @@ async function runYtDlp(args, cwd) {
 export async function downloadYoutubeAudio(watchUrl, outDir) {
   fs.mkdirSync(outDir, { recursive: true });
 
+  // Shared anti-bot flags for every yt-dlp call in this flow.
+  const baseArgs = [];
+  if (config.ytExtractorArgs) {
+    baseArgs.push("--extractor-args", config.ytExtractorArgs);
+  }
+  const cookiesFile = config.ytCookiesFile;
+  if (cookiesFile) {
+    if (!fs.existsSync(cookiesFile)) {
+      throw new Error(`YT_COOKIES_FILE not found: ${cookiesFile}`);
+    }
+    baseArgs.push("--cookies", cookiesFile);
+    logger.info("Using YouTube cookies for authenticated download.");
+  }
+
   const { stdout: titleOut } = await runYtDlp(
-    ["--no-playlist", "--skip-download", "--print", "%(title)s", watchUrl],
+    ["--no-playlist", "--skip-download", "--print", "%(title)s", ...baseArgs, watchUrl],
     outDir
   );
   const title = titleOut.trim() || "YouTube video";
@@ -83,6 +97,7 @@ export async function downloadYoutubeAudio(watchUrl, outDir) {
       "96K",
       "-o",
       "audio.%(ext)s",
+      ...baseArgs,
       watchUrl,
     ],
     outDir
