@@ -193,6 +193,7 @@ Restart the API server after changing `server/.env`.
 ## Using it
 
 - **Studio (`/app`)** — left: index PDFs, audio, video, web URLs with **live progress + streaming logs**; below it, **Indexed sources** history (per user, click 🗑 → confirm to remove the record). Right: **chat** with collapsible retrieved sources, copy buttons, timestamps.
+- **Profile (`/app/profile`, header avatar)** — edit name, phone and gender; connect or remove Google/GitHub logins (removing your last sign-in method is blocked).
 - **Settings (gear icon)** — your OpenAI key (show/hide, remove anytime) + embedding model for indexing + chat model for answering. Stored in `localStorage` only; sent per request as `x-openai-key`; the server keeps it in memory for that request/job and never persists it.
 - **Landing (`/`)** — public page with an animated, auto-playing pipeline walkthrough (indexing + answering modes).
 
