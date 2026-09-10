@@ -25,7 +25,7 @@ ENV NODE_ENV=production
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg python3 python3-pip curl openssl ca-certificates \
  && rm -rf /var/lib/apt/lists/* \
- && pip install --no-cache-dir --break-system-packages yt-dlp
+ && pip install --no-cache-dir --break-system-packages yt-dlp bgutil-ytdlp-pot-provider
 WORKDIR /app/server
 COPY server/package.json server/package-lock.json ./
 RUN npm ci --omit=dev

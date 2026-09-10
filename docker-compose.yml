@@ -75,7 +75,8 @@ services:
     # 3. Uncomment the lines below (host path left, container path right).
     # 4. Set YT_COOKIES_FILE=/app/cookies.txt in server/.env, then up -d server.
     volumes:
-      - ./cookies.txt:/app/cookies.txt:ro
+      # Writable on purpose: yt-dlp refreshes cookie expiries in place.
+      - ./cookies.txt:/app/cookies.txt
 
   web:
     build:
