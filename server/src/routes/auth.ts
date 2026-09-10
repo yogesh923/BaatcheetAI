@@ -174,10 +174,12 @@ router.get("/google/callback", async (req: Request, res: Response) => {
     if (typeof verifier !== "string") throw new Error("Missing verifier.");
     const user = await upsertOAuthUser(await googleProfile(code, verifier));
     await setSessionCookie(res, user.id);
-    res.redirect(`${env.webUrl}/app`);
+    // NOTE: appUrl (single origin), never webUrl — webUrl may be a
+    // comma-separated CORS allow-list, which is not a valid redirect target.
+    res.redirect(`${env.appUrl}/app`);
   } catch (err) {
     res.redirect(
-      `${env.webUrl}/login?error=${encodeURIComponent(err instanceof Error ? err.message : "OAuth failed.")}`
+      `${env.appUrl}/login?error=${encodeURIComponent(err instanceof Error ? err.message : "OAuth failed.")}`
     );
   } finally {
     res.clearCookie(OAUTH_STATE_COOKIE, { path: "/" });
@@ -192,10 +194,11 @@ router.get("/github/callback", async (req: Request, res: Response) => {
     if (state !== req.cookies?.[OAUTH_STATE_COOKIE]) throw new Error("State mismatch.");
     const user = await upsertOAuthUser(await githubProfile(code));
     await setSessionCookie(res, user.id);
-    res.redirect(`${env.webUrl}/app`);
+    // NOTE: appUrl (single origin), never webUrl — see google callback above.
+    res.redirect(`${env.appUrl}/app`);
   } catch (err) {
     res.redirect(
-      `${env.webUrl}/login?error=${encodeURIComponent(err instanceof Error ? err.message : "OAuth failed.")}`
+      `${env.appUrl}/login?error=${encodeURIComponent(err instanceof Error ? err.message : "OAuth failed.")}`
     );
   } finally {
     res.clearCookie(OAUTH_STATE_COOKIE, { path: "/" });
