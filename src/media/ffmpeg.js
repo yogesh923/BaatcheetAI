@@ -7,6 +7,46 @@ import { logger } from "../logger.js";
 
 const execFileAsync = promisify(execFile);
 
+/** Run ffmpeg/ffprobe with a short, readable error instead of a full dump. */
+const runMediaTool = async (tool, args) => {
+  try {
+    return await execFileAsync(tool, args, { maxBuffer: 16 * 1024 * 1024 });
+  } catch (err) {
+    if (err?.code === "ENOENT") throw err;
+    const stderr = (err?.stderr ?? "")
+      .toString()
+      .trim()
+      .split("\n")
+      .filter((l) => !l.startsWith("ffmpeg version") && !l.startsWith("  configuration:"))
+      .slice(-3)
+      .join(" ");
+    throw new Error(`ffmpeg failed: ${stderr || err.message}`);
+  }
+};
+
+/**
+ * True when the file has at least one audio stream. Falls back to true when
+ * ffprobe is unavailable — ffmpeg then reports the real problem itself.
+ */
+export async function hasAudioStream(file) {
+  try {
+    const { stdout } = await runMediaTool("ffprobe", [
+      "-v",
+      "error",
+      "-select_streams",
+      "a",
+      "-show_entries",
+      "stream=index",
+      "-of",
+      "csv=p=0",
+      file,
+    ]);
+    return stdout.trim().length > 0;
+  } catch {
+    return true;
+  }
+}
+
 /** Split a long audio file into ~5 min parts (stays under Whisper 25 MB limit). */
 export async function splitAudio(audioFile, { tmpDir, segmentSeconds } = {}) {
   const outDir = tmpDir ?? config.audioTmpDir;
@@ -15,7 +55,7 @@ export async function splitAudio(audioFile, { tmpDir, segmentSeconds } = {}) {
   fs.mkdirSync(outDir, { recursive: true });
 
   const outputPattern = path.join(outDir, "part_%03d.mp3");
-  await execFileAsync("ffmpeg", [
+  await runMediaTool("ffmpeg", [
     "-i",
     audioFile,
     "-f",
@@ -45,7 +85,13 @@ export async function extractAudioFromVideo(videoFile, { tmpDir } = {}) {
   fs.mkdirSync(outDir, { recursive: true });
   const audioFile = path.join(outDir, "audio.mp3");
   logger.info("Extracting audio from video...");
-  await execFileAsync("ffmpeg", [
+  if (!(await hasAudioStream(videoFile))) {
+    throw new Error(
+      "This video has no audio track, so there is nothing to transcribe. " +
+        "Upload a video with narration or sound and try again."
+    );
+  }
+  await runMediaTool("ffmpeg", [
     "-i",
     videoFile,
     "-vn",
