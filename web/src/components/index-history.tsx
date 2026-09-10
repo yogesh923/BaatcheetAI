@@ -20,6 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { apiFetch } from "@/lib/api";
+import { toast } from "@/lib/toast";
 
 interface HistoryEntry {
   id: string;
@@ -84,7 +85,10 @@ export function IndexHistory() {
     setDeleting(id);
     try {
       const res = await apiFetch(`/api/history?id=${id}`, { method: "DELETE" });
-      if (res.ok) setEntries((prev) => prev.filter((e) => e.id !== id));
+      if (res.ok) {
+        setEntries((prev) => prev.filter((e) => e.id !== id));
+        toast.success("Source removed from history.");
+      }
     } finally {
       setDeleting(null);
       setPendingDelete(null);

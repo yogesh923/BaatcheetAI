@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { API_URL, apiFetch } from "@/lib/api";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 interface Me {
@@ -99,6 +100,7 @@ export function ProfileForm() {
       }
       setMe(data.user);
       setSaved(true);
+      toast.success("Profile saved.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save profile.");
     } finally {
@@ -115,7 +117,7 @@ export function ProfileForm() {
         throw new Error(data.error ?? "Could not unlink account.");
       }
       setPendingUnlink(null);
-      setNotice(
+      toast.success(
         `${provider === "google" ? "Google" : "GitHub"} account removed.`
       );
       refresh();

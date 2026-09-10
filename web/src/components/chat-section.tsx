@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { apiFetch } from "@/lib/api";
 import { getApiKey, getChatModel, getEmbeddingModel, requestApiKey } from "@/lib/credentials";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 interface ChatMessage {
@@ -147,7 +148,9 @@ export function ChatSection() {
         { role: "assistant", content: data.answer, sources: data.sources, at: Date.now() },
       ]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Chat failed.");
+      const msg = err instanceof Error ? err.message : "Chat failed.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

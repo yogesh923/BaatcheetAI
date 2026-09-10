@@ -1,10 +1,13 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { apiFetch } from "@/lib/api";
+import { toast } from "@/lib/toast";
 
 interface UserMenuProps {
   name?: string | null;
@@ -15,11 +18,20 @@ interface UserMenuProps {
 export function UserMenu({ name, email, image }: UserMenuProps) {
   const router = useRouter();
   const initial = (name ?? email ?? "?").trim().charAt(0).toUpperCase();
+  const [confirming, setConfirming] = React.useState(false);
+  const [leaving, setLeaving] = React.useState(false);
 
   async function signOut() {
-    await apiFetch("/api/auth/logout", { method: "POST" }).catch(() => {});
-    router.push("/login");
-    router.refresh();
+    setLeaving(true);
+    try {
+      await apiFetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+      toast.success("Signed out. See you soon!");
+      router.push("/login");
+      router.refresh();
+    } finally {
+      setLeaving(false);
+      setConfirming(false);
+    }
   }
   return (
     <div className="flex items-center gap-2">
@@ -48,12 +60,21 @@ export function UserMenu({ name, email, image }: UserMenuProps) {
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => signOut()}
+        onClick={() => setConfirming(true)}
         aria-label="Sign out"
         title="Sign out"
       >
         <LogOut className="size-4" />
       </Button>
+      <ConfirmDialog
+        open={confirming}
+        title="Sign out?"
+        description="You'll need to sign in again to use BaatCheetLLM."
+        confirmLabel="Sign out"
+        pending={leaving}
+        onCancel={() => setConfirming(false)}
+        onConfirm={() => signOut()}
+      />
     </div>
   );
 }

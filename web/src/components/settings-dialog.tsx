@@ -6,6 +6,7 @@ import { Settings2, Eye, EyeOff, Trash2, CheckCircle2, Loader2 } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/api";
+import { toast } from "@/lib/toast";
 import {
   CREDENTIAL_DEFAULTS,
   getApiKey,
@@ -126,6 +127,7 @@ export function SettingsDialog() {
     saveCredentials({ apiKey: key, embeddingModel: emb, chatModel: chat });
     setSaved(true);
     setNotice("");
+    toast.success("OpenAI setup saved in this browser.");
     setTimeout(() => {
       setOpen(false);
       setSaved(false);

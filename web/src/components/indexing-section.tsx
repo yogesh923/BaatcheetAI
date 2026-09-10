@@ -27,6 +27,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { API_URL, apiFetch } from "@/lib/api";
 import { getApiKey, getEmbeddingModel, requestApiKey } from "@/lib/credentials";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 type SourceType = "pdf" | "audio" | "video" | "website";
@@ -131,18 +132,21 @@ export function IndexingSection() {
     setActive(false);
     setFailed(false);
     const r = job.result ?? {};
-    setMessage(
+    const doneMessage =
       `Indexed successfully — ${r.chunks ?? "?"} chunks` +
-        (r.segments != null ? ` from ${r.segments} transcript segments` : "") +
-        " added to the collection."
-    );
+      (r.segments != null ? ` from ${r.segments} transcript segments` : "") +
+      " added to the collection.";
+    setMessage(doneMessage);
+    toast.success(doneMessage);
     window.dispatchEvent(new CustomEvent("rag:history-updated"));
   }
 
   function finishErr(error?: string) {
     setActive(false);
     setFailed(true);
-    setMessage(error || "Indexing failed.");
+    const msg = error || "Indexing failed.";
+    setMessage(msg);
+    toast.error(msg);
   }
 
   function pollJob(jobId: string) {
