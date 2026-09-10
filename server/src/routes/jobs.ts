@@ -8,7 +8,6 @@ import { createJob, getJob } from "../jobs/store.js";
 import { runIndexJob, type JobInput } from "../jobs/runner.js";
 import { requireUser, type AuthedRequest } from "../auth/requireUser.js";
 import { requireApiKey, parseEmbeddingModel } from "../models.js";
-import { parseYoutubeUrl } from "../backend.js";
 
 const router = Router();
 
@@ -55,22 +54,6 @@ router.post("/", requireUser, upload.single("file"), async (req: FileRequest, re
       }
       const job = createJob(userId, "website", sourceName);
       void runIndexJob(job.id, userId, { kind: "website", url, sourceName }, creds);
-      res.json({ ok: true, jobId: job.id });
-      return;
-    }
-
-    if (type === "youtube") {
-      const url = String(req.body?.url ?? "").trim();
-      if (!url) {
-        res.status(400).json({ ok: false, error: "URL is required." });
-        return;
-      }
-      if (!parseYoutubeUrl(url)) {
-        res.status(400).json({ ok: false, error: "Not a valid YouTube watch/shorts/share URL." });
-        return;
-      }
-      const job = createJob(userId, "youtube", url);
-      void runIndexJob(job.id, userId, { kind: "youtube", url }, creds);
       res.json({ ok: true, jobId: job.id });
       return;
     }

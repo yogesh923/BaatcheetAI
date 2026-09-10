@@ -1,14 +1,14 @@
 # BaatCheetLLM
 
-Chat with your documents. Index **PDFs, audio, video, YouTube links and web pages**, then ask questions and get **grounded answers with citations** — page numbers, URLs and timestamps.
+Chat with your documents. Index **PDFs, audio, video and web pages**, then ask questions and get **grounded answers with citations** — page numbers, URLs and timestamps.
 
 Bring your own OpenAI key: every user runs the app on their own API budget. Keys live only in their browser — never in our database.
 
 ## How it works
 
 ```
-PDF / audio / video / YouTube / URL
-        │ ① ingest (yt-dlp · ffmpeg · Whisper · pdf-parse)
+PDF / audio / video / URL
+        │ ① ingest (ffmpeg · Whisper · pdf-parse)
         ▼
   split → 1000-char chunks (200 overlap, timestamps kept)
         │ ② embed (OpenAI, per-user key + model)
@@ -59,7 +59,7 @@ Open `http://localhost:3000` → **Create account** (or Google/GitHub) → gear 
 | Service | URL | Notes |
 |---|---|---|
 | web | `http://localhost:3000` | Next.js UI |
-| server | `http://localhost:4000/api/health` | Express API (`ffmpeg` + `yt-dlp` baked into the image) |
+| server | `http://localhost:4000/api/health` | Express API (`ffmpeg` baked into the image) |
 | postgres | `localhost:5432` | Data in the `baatcheet-pgdata` volume — kept across restarts |
 | qdrant | `http://localhost:6333` | Vectors in the `baatcheet-qdrant` volume |
 
@@ -127,7 +127,7 @@ docker run -d --name baatcheet-postgres --restart unless-stopped \
 npm install          # in rag/
 npm install          # in rag/server/
 npm install          # in rag/web/
-# (ffmpeg + yt-dlp must be on PATH for audio/video/YouTube indexing)
+# (ffmpeg must be on PATH for audio/video indexing)
 
 # 3. Configure environment (see tables below — never commit these files)
 #    rag/.env, rag/server/.env, rag/web/.env.local
@@ -192,7 +192,7 @@ Restart the API server after changing `server/.env`.
 
 ## Using it
 
-- **Studio (`/app`)** — left: index PDFs, audio, video, YouTube, web URLs with **live progress + streaming logs**; below it, **Indexed sources** history (per user, click 🗑 → confirm to remove the record). Right: **chat** with collapsible retrieved sources, copy buttons, timestamps.
+- **Studio (`/app`)** — left: index PDFs, audio, video, web URLs with **live progress + streaming logs**; below it, **Indexed sources** history (per user, click 🗑 → confirm to remove the record). Right: **chat** with collapsible retrieved sources, copy buttons, timestamps.
 - **Settings (gear icon)** — your OpenAI key (show/hide, remove anytime) + embedding model for indexing + chat model for answering. Stored in `localStorage` only; sent per request as `x-openai-key`; the server keeps it in memory for that request/job and never persists it.
 - **Landing (`/`)** — public page with an animated, auto-playing pipeline walkthrough (indexing + answering modes).
 
@@ -203,7 +203,6 @@ npm run index:pdf       # scripts/index-pdf.js [file]
 npm run index:audio     # scripts/index-audio.js [file]
 npm run index:video     # scripts/index-video.js [file]
 npm run index:website   # scripts/index-website.js [url]
-npm run index:youtube   # scripts/index-youtube.js <youtube-url>
 npm start               # terminal chat (main.js)
 ```
 
@@ -218,7 +217,7 @@ rag/
 ├── scripts/             # CLI entry points (npm run index:*)
 ├── main.js              # terminal chat
 ├── server/              # Express API :4000
-│   ├── Dockerfile       # multi-stage (ffmpeg + yt-dlp + prod deps)
+│   ├── Dockerfile       # multi-stage (ffmpeg + prod deps)
 │   ├── prisma/          # schema + migrations (Postgres)
 │   └── src/             # env, db, auth/, routes/, jobs/
 ├── web/                 # Next.js UI :3000 (pages + components only)
@@ -232,4 +231,3 @@ rag/
 - **History = vectors too:** deleting a history entry removes its vectors from the collection first (filtered by an id stamped on every chunk), then drops the record. Sources indexed before this existed only clear the record.
 - **Fresh database:** `psql $DATABASE_URL` → tables `User`, `OAuthAccount`, `IndexedSource`. Inspect with `npm run db:studio` in `server/`.
 - **Never commit** `.env` files — all three packages gitignore them (see `.gitignore` files).
-- **YouTube "Sign in to confirm you're not a bot":** YouTube challenges datacenter IPs. The app defaults to the `android` player client (`YT_EXTRACTOR_ARGS`), which is challenged far less, and the server image bundles a PO-token provider (`bgutil-ytdlp-pot-provider`) that resolves most remaining challenges automatically. If a video still refuses: export cookies from a logged-in browser (e.g. "Get cookies.txt"), set `YT_COOKIES_FILE=/path/to/cookies.txt` in `server/.env` (mount it into the container in Docker; on Render add a Secret File named exactly `cookies.txt` and set `YT_COOKIES_FILE=/etc/secrets/cookies.txt`), and retry. Treat the file like a password and never paste it anywhere shared.

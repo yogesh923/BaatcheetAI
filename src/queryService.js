@@ -30,12 +30,6 @@ function formatSource(doc, index) {
       - ${formatTimestamp(metadata.timestamp_end)}`;
   }
 
-  if (metadata.source_type === "youtube") {
-    sourceInfo = `URL: ${metadata.source_url ?? "Unknown"}
-      Timestamp: ${formatTimestamp(metadata.timestamp_start)}
-      - ${formatTimestamp(metadata.timestamp_end)}`;
-  }
-
   return `
       [Source ${index + 1}]
 
@@ -100,10 +94,6 @@ export function buildSystemPromptWithContext(similarContext) {
     - Audio:
       Mention the source name and timestamp.
       Example: Source: all_ai_terms.mp3, Timestamp: 10:23 - 11:21
-
-    - YouTube:
-      Mention the video title, URL and timestamp.
-      Example: Source: <video_title>, URL: <source_url>, Timestamp: 10:23 - 11:21
 
   9. Never invent or guess page numbers, URLs, timestamps, source names,
     or other metadata.

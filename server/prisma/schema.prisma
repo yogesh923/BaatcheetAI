@@ -35,7 +35,7 @@ model IndexedSource {
   id         String   @id @default(cuid())
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type       String // "pdf" | "audio" | "video" | "website" | "youtube"
+  type       String // "pdf" | "audio" | "video" | "website"
   label      String
   detail     String?
   /** Job id stamped as metadata.source_id on every chunk — targets vector deletes. Null for pre-stamp rows. */

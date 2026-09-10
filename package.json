@@ -9,7 +9,6 @@
     "index:audio": "node scripts/index-audio.js",
     "index:video": "node scripts/index-video.js",
     "index:website": "node scripts/index-website.js",
-    "index:youtube": "node scripts/index-youtube.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

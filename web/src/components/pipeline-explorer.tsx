@@ -172,8 +172,8 @@ const INDEX_STAGES: Stage[] = [
     icon: <UploadCloud className="size-4" />,
     title: "Upload anything",
     tagline: "Step 1 · Ingest",
-    desc: "Drop in PDFs, audio, video, a YouTube link or a web URL. Files are staged securely and every job streams live progress and logs.",
-    chips: ["PDF", "MP3 / WAV", "MP4", "YouTube", "Web URL"],
+    desc: "Drop in PDFs, audio, video or a web URL. Files are staged securely and every job streams live progress and logs.",
+    chips: ["PDF", "MP3 / WAV", "MP4", "Web URL"],
     visual: <UploadVignette />,
   },
   {
@@ -296,7 +296,7 @@ export function PipelineExplorer() {
           <p className="text-xs font-semibold tracking-widest text-blue-600 uppercase dark:text-blue-400">
             {stage.tagline}
           </p>
-          <h3 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
+          <h3 className="flex items-center gap-2 font-display text-2xl font-semibold tracking-tight">
             <span className="flex size-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
               {stage.icon}
             </span>

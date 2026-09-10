@@ -18,5 +18,4 @@ export { indexPdf } from "./indexers/pdf.js";
 export { indexWebsite } from "./indexers/website.js";
 export { indexAudio } from "./indexers/audio.js";
 export { indexVideo } from "./indexers/video.js";
-export { indexYoutube, parseYoutubeUrl, downloadYoutubeAudio } from "./indexers/youtube.js";
 export { buildContext, buildSystemPrompt, buildSystemPromptWithContext, ask, askWithContext } from "./queryService.js";

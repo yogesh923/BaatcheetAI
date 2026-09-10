@@ -69,14 +69,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-    # Optional YouTube cookies (bot-check fallback when player clients fail):
-    # 1. Export youtube.com cookies ("Get cookies.txt LOCALLY" extension).
-    # 2. Save as rag/cookies.txt (gitignored) — or any host path you prefer.
-    # 3. Uncomment the lines below (host path left, container path right).
-    # 4. Set YT_COOKIES_FILE=/app/cookies.txt in server/.env, then up -d server.
-    volumes:
-      # Writable on purpose: yt-dlp refreshes cookie expiries in place.
-      - ./cookies.txt:/app/cookies.txt
 
   web:
     build:

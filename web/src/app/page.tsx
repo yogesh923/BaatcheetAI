@@ -5,7 +5,6 @@ import {
   FileText,
   AudioLines,
   Clapperboard,
-  MonitorPlay,
   Globe,
   Quote,
   ListChecks,
@@ -31,7 +30,7 @@ import { Reveal } from "@/components/reveal";
 export const metadata = {
   title: "BaatCheetLLM — Chat with your documents",
   description:
-    "Index PDFs, audio, video, YouTube links and web pages, then get grounded answers with citations.",
+    "Index PDFs, audio, video and web pages, then get grounded answers with citations.",
 };
 
 const SOURCES = [
@@ -49,11 +48,6 @@ const SOURCES = [
     icon: <Clapperboard className="size-5" />,
     name: "Video",
     desc: "Audio extracted with ffmpeg, then transcribed.",
-  },
-  {
-    icon: <MonitorPlay className="size-5" />,
-    name: "YouTube",
-    desc: "Paste a link — audio downloaded and indexed.",
   },
   {
     icon: <Globe className="size-5" />,
@@ -145,7 +139,7 @@ export default async function LandingPage() {
             </Badge>
           </Reveal>
           <Reveal delay={100}>
-            <h1 className="max-w-3xl text-4xl leading-tight font-bold tracking-tight sm:text-5xl md:text-6xl">
+            <h1 className="max-w-3xl font-display text-4xl leading-[1.05] font-bold tracking-tight text-balance sm:text-5xl md:text-6xl">
               Talk to your{" "}
               <span className="bg-gradient-to-r from-blue-600 via-sky-500 to-blue-600 bg-clip-text text-transparent">
                 documents
@@ -155,7 +149,7 @@ export default async function LandingPage() {
           </Reveal>
           <Reveal delay={200}>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Index PDFs, audio, video, YouTube links and web pages — then ask
+              Index PDFs, audio, video and web pages — then ask
               questions and get answers backed by exact citations.
             </p>
           </Reveal>
@@ -199,12 +193,12 @@ export default async function LandingPage() {
           <p className="text-xs font-semibold tracking-widest text-blue-600 uppercase dark:text-blue-400">
             Sources
           </p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight">Works with what you have</h2>
+          <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-balance">Works with what you have</h2>
           <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground">
             Five ingest paths, one searchable collection with live progress and logs.
           </p>
         </Reveal>
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {SOURCES.map((s, i) => (
             <Reveal key={s.name} delay={i * 80}>
               <Card className="h-full transition-all hover:-translate-y-1 hover:border-blue-500/50 hover:shadow-glow">
@@ -228,7 +222,7 @@ export default async function LandingPage() {
             <p className="text-xs font-semibold tracking-widest text-blue-600 uppercase dark:text-blue-400">
               How it works
             </p>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight">
+            <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-balance">
               From files to answers in eight steps
             </h2>
             <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground">
@@ -247,7 +241,7 @@ export default async function LandingPage() {
           <p className="text-xs font-semibold tracking-widest text-blue-600 uppercase dark:text-blue-400">
             Features
           </p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight">Built for real research</h2>
+          <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-balance">Built for real research</h2>
         </Reveal>
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((f, i) => (
@@ -274,7 +268,7 @@ export default async function LandingPage() {
               aria-hidden
               className="animate-drift pointer-events-none absolute -top-20 left-1/4 h-56 w-56 rounded-full bg-sky-400/30 blur-3xl"
             />
-            <h2 className="relative text-2xl font-bold tracking-tight sm:text-3xl">
+            <h2 className="relative font-display text-2xl font-bold tracking-tight text-balance sm:text-3xl">
               Ready to baat-cheet with your data?
             </h2>
             <p className="relative mx-auto mt-2 max-w-md text-sm text-blue-100">

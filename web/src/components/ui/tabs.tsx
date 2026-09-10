@@ -38,7 +38,7 @@ function TabsList({
     <div
       role="tablist"
       className={cn(
-        "grid h-auto w-full grid-cols-5 items-stretch gap-1 rounded-lg bg-muted p-1 text-muted-foreground",
+        "grid h-auto w-full grid-cols-4 items-stretch gap-1 rounded-lg bg-muted p-1 text-muted-foreground",
         className
       )}
       {...props}

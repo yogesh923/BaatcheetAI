@@ -6,7 +6,6 @@ import {
   AudioLines,
   Clapperboard,
   Globe,
-  MonitorPlay,
   Trash2,
   Loader2,
   History,
@@ -39,7 +38,6 @@ const TYPE_ICON: Record<string, React.ReactNode> = {
   audio: <AudioLines className="size-4" />,
   video: <Clapperboard className="size-4" />,
   website: <Globe className="size-4" />,
-  youtube: <MonitorPlay className="size-4" />,
 };
 
 function timeAgo(iso: string) {
@@ -115,7 +113,7 @@ export function IndexHistory() {
           </p>
         ) : entries.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Nothing indexed yet. Add a PDF, audio, video, YouTube link or web page above.
+            Nothing indexed yet. Add a PDF, audio, video or web page above.
           </p>
         ) : (
           <ul className="flex max-h-72 flex-col gap-2 overflow-y-auto">

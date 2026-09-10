@@ -23,15 +23,6 @@ export const config = {
   audioSegmentSeconds: 300, // 5 minutes
   audioTmpDir: "./tmp/audio_parts",
   videoTmpDir: "./tmp/video",
-  youtubeTmpDir: "./tmp/youtube",
-  ytDlpBinary: process.env.YT_DLP_BINARY ?? "yt-dlp",
-  // YouTube bot-check bypass: the android player client is challenged far
-  // less than web on datacenter IPs. Override via YT_EXTRACTOR_ARGS.
-  // Optional logged-in session: YT_COOKIES_FILE=/path/to/cookies.txt
-  // (exported from a logged-in browser; needed only if challenges persist).
-  ytExtractorArgs:
-    process.env.YT_EXTRACTOR_ARGS ?? "youtube:player_client=android,web",
-  ytCookiesFile: process.env.YT_COOKIES_FILE ?? "",
   textChunkSize: 1000,
   textChunkOverlap: 200,
 };

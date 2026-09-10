@@ -47,8 +47,6 @@ export { indexVideo } from "../../src/indexers/video.js";
 // @ts-ignore: untyped shared backend module
 export { indexWebsite } from "../../src/indexers/website.js";
 // @ts-ignore: untyped shared backend module
-export { indexYoutube, parseYoutubeUrl } from "../../src/indexers/youtube.js";
-// @ts-ignore: untyped shared backend module
 export { askWithContext } from "../../src/queryService.js";
 // @ts-ignore: untyped shared backend module
 export { deleteSourceVectors } from "../../src/vectorStore.js";

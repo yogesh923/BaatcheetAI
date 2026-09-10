@@ -12,7 +12,6 @@ import {
   indexAudio,
   indexVideo,
   indexWebsite,
-  indexYoutube,
   type BackendIndexResult,
   type BackendLogEntry,
   type BackendProgress,
@@ -25,8 +24,7 @@ export function backendTmp(...parts: string[]): string {
 
 export type JobInput =
   | { kind: "pdf" | "audio" | "video"; filePath: string; fileName: string }
-  | { kind: "website"; url: string; sourceName: string }
-  | { kind: "youtube"; url: string };
+  | { kind: "website"; url: string; sourceName: string };
 
 /** Caller-owned OpenAI credentials — memory only, never persisted. */
 export interface JobCreds {
@@ -75,12 +73,6 @@ export async function runIndexJob(
         onProgress,
         ...credOpts,
       });
-    } else if (input.kind === "youtube") {
-      result = await indexYoutube(input.url, {
-        tmpDir: backendTmp("youtube"),
-        onProgress,
-        ...credOpts,
-      });
     } else if (input.kind === "website") {
       result = await indexWebsite(input.url, {
         sourceName: input.sourceName,
@@ -95,14 +87,8 @@ export async function runIndexJob(
     setJobProgress(jobId, { phase: "done", done: 1, total: 1 });
     setJobStatus(jobId, "done", { result });
 
-    const label =
-      input.kind === "website"
-        ? input.sourceName || input.url
-        : input.kind === "youtube"
-          ? result.title || input.url
-          : input.fileName;
-    const detail =
-      input.kind === "website" || input.kind === "youtube" ? input.url : undefined;
+    const label = input.kind === "website" ? input.sourceName || input.url : input.fileName;
+    const detail = input.kind === "website" ? input.url : undefined;
 
     await prisma.indexedSource.create({
       data: {

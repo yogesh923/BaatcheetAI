@@ -6,7 +6,6 @@ import {
   AudioLines,
   Clapperboard,
   Globe,
-  MonitorPlay,
   UploadCloud,
   Loader2,
   CheckCircle2,
@@ -30,7 +29,7 @@ import { API_URL, apiFetch } from "@/lib/api";
 import { getApiKey, getEmbeddingModel, requestApiKey } from "@/lib/credentials";
 import { cn } from "@/lib/utils";
 
-type SourceType = "pdf" | "audio" | "video" | "website" | "youtube";
+type SourceType = "pdf" | "audio" | "video" | "website";
 
 interface JobLog {
   level: string;
@@ -44,7 +43,7 @@ interface JobProgress {
   total: number | null;
 }
 
-const ACCEPT: Record<Exclude<SourceType, "website" | "youtube">, string> = {
+const ACCEPT: Record<Exclude<SourceType, "website">, string> = {
   pdf: "application/pdf,.pdf",
   audio: "audio/*,.mp3,.wav,.m4a,.ogg",
   video: "video/*,.mp4,.mov,.mkv,.webm",
@@ -55,12 +54,10 @@ const HINT: Record<SourceType, string> = {
   audio: "Audio is split into 5-min parts, transcribed with Whisper, then indexed with timestamps.",
   video: "Audio is extracted with ffmpeg, transcribed with Whisper, then indexed with timestamps.",
   website: "The page is fetched, chunked into 1000-char passages and embedded.",
-  youtube: "Audio is downloaded with yt-dlp, transcribed with Whisper, then indexed with timestamps.",
 };
 
 const PHASE_LABEL: Record<string, string> = {
   queued: "Queued…",
-  downloading: "Downloading audio from YouTube…",
   splitting: "Splitting audio…",
   extracting: "Extracting audio from video…",
   loading: "Loading PDF…",
@@ -101,15 +98,8 @@ export function IndexingSection() {
   const logBoxRef = React.useRef<HTMLDivElement>(null);
 
   const isWebsite = tab === "website";
-  const isUrlType = isWebsite || tab === "youtube";
   const canSubmit =
-    !active && (isUrlType ? url.trim().length > 0 : file !== null);
-
-  function isYoutubeUrl(value: string) {
-    return /^(?:https?:\/\/)?(?:www\.|m\.|music\.)?(?:youtube\.com\/(?:watch\?[^#\s]*v=|shorts\/|embed\/|live\/|v\/)|youtu\.be\/)([\w-]{11})/i.test(
-      value.trim()
-    );
-  }
+    !active && (isWebsite ? url.trim().length > 0 : file !== null);
 
   const closeStream = React.useCallback(() => {
     esRef.current?.close();
@@ -241,11 +231,6 @@ export function IndexingSection() {
       if (tab === "website") {
         form.set("url", url.trim());
         form.set("sourceName", sourceName.trim() || "Website");
-      } else if (tab === "youtube") {
-        if (!isYoutubeUrl(url)) {
-          throw new Error("Paste a valid YouTube watch, Shorts or share URL.");
-        }
-        form.set("url", url.trim());
       } else if (file) {
         form.set("file", file, file.name);
       }
@@ -281,7 +266,7 @@ export function IndexingSection() {
           <Badge variant="secondary">Qdrant</Badge>
         </div>
         <CardDescription>
-          Add PDFs, audio, video, YouTube links or web pages to the knowledge base.
+          Add PDFs, audio, video or web pages to the knowledge base.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -297,7 +282,6 @@ export function IndexingSection() {
             <TabsTrigger value="pdf"><FileText />PDF</TabsTrigger>
             <TabsTrigger value="audio"><AudioLines />Audio</TabsTrigger>
             <TabsTrigger value="video"><Clapperboard />Video</TabsTrigger>
-            <TabsTrigger value="youtube"><MonitorPlay />YouTube</TabsTrigger>
             <TabsTrigger value="website"><Globe />Web</TabsTrigger>
           </TabsList>
 
@@ -369,20 +353,6 @@ export function IndexingSection() {
               />
             </div>
             <p className="text-xs text-muted-foreground">{HINT.website}</p>
-          </TabsContent>
-
-          <TabsContent value="youtube" className="gap-3">
-            <div className="flex flex-col gap-2">
-              <label htmlFor="index-yt-url" className="text-sm font-medium">YouTube URL</label>
-              <Input
-                id="index-yt-url"
-                type="url"
-                placeholder="https://www.youtube.com/watch?v=…"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">{HINT.youtube}</p>
           </TabsContent>
         </Tabs>
 
@@ -473,7 +443,7 @@ export function IndexingSection() {
 
         <Button onClick={handleIndex} disabled={!canSubmit}>
           {active && <Loader2 className="animate-spin" />}
-          {active ? "Indexing…" : `Index ${isUrlType ? "URL" : "file"}`}
+          {active ? "Indexing…" : `Index ${isWebsite ? "URL" : "file"}`}
         </Button>
       </CardContent>
     </Card>
